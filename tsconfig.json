@@ -7,10 +7,21 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2021",
+    "target": "es2022",
+    "lib": [
+      "es2022"
+    ],
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "types": [
+      "vitest/globals"
+    ],
     "strict": true,
     "alwaysStrict": true,
     "incremental": true,
@@ -18,7 +29,7 @@
     "strictPropertyInitialization": false,
     "strictNullChecks": true,
     "noImplicitAny": true,
-    "strictBindCallApply": true,
+    "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": true
   }
 }
