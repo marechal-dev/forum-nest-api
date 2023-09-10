@@ -7,8 +7,10 @@
 .env.test
 
 # Public/Private Keys
-public*.*
-private*.*
+public_key.pem
+private_key.pem
+private.txt
+public.txt
 
 # Logs
 logs
