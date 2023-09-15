@@ -4,26 +4,59 @@ import { PrismaService } from '../prisma.service';
 import { PaginationParams } from '@/core/repositories/pagination-params';
 import { QuestionCommentsRepository } from '@/domain/forum/application/repositories/question-comments-repository';
 import { QuestionComment } from '@/domain/forum/enterprise/entities/question-comment';
+import { PrismaQuestionCommentMapper } from '../mappers/prisma-question-comment-mapper';
 
 @Injectable()
-export class PrismaQuestionCommentsRepository
-  implements QuestionCommentsRepository
-{
-  public constructor(private readonly prisma: PrismaService) {}
+export class PrismaQuestionCommentsRepository extends QuestionCommentsRepository {
+  public constructor(private readonly prisma: PrismaService) {
+    super();
+  }
+
+  public async create(questionComment: QuestionComment): Promise<void> {
+    const data = PrismaQuestionCommentMapper.toPrisma(questionComment);
+
+    await this.prisma.comment.create({
+      data,
+    });
+  }
+
+  public async delete(questionComment: QuestionComment): Promise<void> {
+    await this.prisma.comment.delete({
+      where: {
+        id: questionComment.id.toString(),
+      },
+    });
+  }
 
   public async findById(id: string): Promise<QuestionComment | null> {
-    throw new Error('Method not implemented.');
+    const raw = await this.prisma.comment.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!raw) {
+      return null;
+    }
+
+    return PrismaQuestionCommentMapper.toDomain(raw);
   }
+
   public async findManyByQuestionId(
     questionId: string,
-    paginationParams: PaginationParams,
+    { page }: PaginationParams,
   ): Promise<QuestionComment[]> {
-    throw new Error('Method not implemented.');
-  }
-  public async create(questionComment: QuestionComment): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  public async delete(questionComment: QuestionComment): Promise<void> {
-    throw new Error('Method not implemented.');
+    const perPage = 20;
+    const skip = (page - 1) * perPage;
+
+    const questionComments = await this.prisma.comment.findMany({
+      where: {
+        questionId,
+      },
+      take: perPage,
+      skip,
+    });
+
+    return questionComments.map(PrismaQuestionCommentMapper.toDomain);
   }
 }

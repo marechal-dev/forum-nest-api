@@ -1,9 +1,7 @@
 import { AnswerAttachmentsRepository } from '@/domain/forum/application/repositories/answer-attachments-repository';
 import { AnswerAttachment } from '@/domain/forum/enterprise/entities/answer-attachment';
 
-export class InMemoryAnswerAttachmentsRepository
-  implements AnswerAttachmentsRepository
-{
+export class InMemoryAnswerAttachmentsRepository extends AnswerAttachmentsRepository {
   public items: AnswerAttachment[] = [];
 
   public async findManyByAnswerId(

@@ -8,8 +8,10 @@ import { Question } from '@/domain/forum/enterprise/entities/question';
 import { PrismaQuestionMapper } from '../mappers/prisma-question-mapper';
 
 @Injectable()
-export class PrismaQuestionsRepository implements QuestionsRepository {
-  public constructor(private readonly prisma: PrismaService) {}
+export class PrismaQuestionsRepository extends QuestionsRepository {
+  public constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
   public async create(question: Question): Promise<void> {
     const data = PrismaQuestionMapper.toPrisma(question);

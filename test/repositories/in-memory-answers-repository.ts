@@ -4,12 +4,14 @@ import { AnswerAttachmentsRepository } from '@/domain/forum/application/reposito
 import { AnswersRepository } from '@/domain/forum/application/repositories/answers-repository';
 import { Answer } from '@/domain/forum/enterprise/entities/answer';
 
-export class InMemoryAnswersRepository implements AnswersRepository {
+export class InMemoryAnswersRepository extends AnswersRepository {
   public items: Answer[] = [];
 
   public constructor(
     private answerAttachmentsRepository: AnswerAttachmentsRepository,
-  ) {}
+  ) {
+    super();
+  }
 
   async findById(id: string) {
     const answer = this.items.find((item) => item.id.toString() === id);

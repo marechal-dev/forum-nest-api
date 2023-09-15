@@ -3,29 +3,58 @@ import { PrismaService } from '../prisma.service';
 import { Injectable } from '@nestjs/common';
 import { PaginationParams } from '@/core/repositories/pagination-params';
 import { AnswerComment } from '@/domain/forum/enterprise/entities/answer-comment';
+import { PrismaAnswerCommentMapper } from '../mappers/prisma-answer-comment-mapper';
 
 @Injectable()
-export class PrismaAnswerCommentsRepository
-  implements AnswerCommentsRepository
-{
-  public constructor(private readonly prisma: PrismaService) {}
+export class PrismaAnswerCommentsRepository extends AnswerCommentsRepository {
+  public constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
   public async create(answerComment: AnswerComment): Promise<void> {
-    throw new Error('Method not implemented.');
+    const data = PrismaAnswerCommentMapper.toPrisma(answerComment);
+
+    await this.prisma.comment.create({
+      data,
+    });
   }
 
   public async delete(answerComment: AnswerComment): Promise<void> {
-    throw new Error('Method not implemented.');
+    await this.prisma.comment.delete({
+      where: {
+        id: answerComment.id.toString(),
+      },
+    });
   }
 
   public async findById(id: string): Promise<AnswerComment | null> {
-    throw new Error('Method not implemented.');
+    const answerComment = await this.prisma.comment.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!answerComment) {
+      return null;
+    }
+
+    return PrismaAnswerCommentMapper.toDomain(answerComment);
   }
 
   public async findManyByAnswerId(
     answerId: string,
-    paginationParams: PaginationParams,
+    { page }: PaginationParams,
   ): Promise<AnswerComment[]> {
-    throw new Error('Method not implemented.');
+    const perPage = 20;
+
+    const answerComments = await this.prisma.comment.findMany({
+      where: {
+        answerId,
+      },
+      take: perPage,
+      skip: (page - 1) * perPage,
+    });
+
+    return answerComments.map(PrismaAnswerCommentMapper.toDomain);
   }
 }
