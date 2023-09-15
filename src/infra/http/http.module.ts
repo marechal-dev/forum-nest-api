@@ -23,7 +23,7 @@ import { EditAnswerController } from './controllers/edit-answer.controller';
 import { EditAnswerUseCase } from '@/domain/forum/application/use-cases/edit-answer';
 import { DeleteAnswerController } from './controllers/delete-answer.controller';
 import { DeleteAnswerUseCase } from '@/domain/forum/application/use-cases/delete-answer';
-import { ListAnswerCommentsController } from './controllers/list-answer-comments.controller';
+import { FetchAnswerCommentsController } from './controllers/fetch-answer-comments.controller';
 import { FetchAnswerCommentsUseCase } from '@/domain/forum/application/use-cases/fetch-answer-comments';
 import { DeleteQuestionCommentController } from './controllers/delete-question-comment.controller';
 import { DeleteQuestionCommentUseCase } from '@/domain/forum/application/use-cases/delete-question-comment';
@@ -33,10 +33,12 @@ import { CommentQuestionController } from './controllers/comment-question.contro
 import { CommentOnQuestionUseCase } from '@/domain/forum/application/use-cases/comment-on-question';
 import { CommentAnswerController } from './controllers/comment-answer.controller';
 import { CommentOnAnswerUseCase } from '@/domain/forum/application/use-cases/comment-on-answer';
-import { ListQuestionAnswersController } from './controllers/list-question-answers.controller';
+import { FetchQuestionAnswersController } from './controllers/fetch-question-answers.controller';
 import { SelectQuestionBestAnswerController } from './controllers/select-question-best-answer.controller';
 import { FetchQuestionAnswersUseCase } from '@/domain/forum/application/use-cases/fetch-question-answers';
 import { ChooseQuestionBestAnswerUseCase } from '@/domain/forum/application/use-cases/choose-question-best-answer';
+import { FetchQuestionCommentsController } from './controllers/fetch-question-comments.controller';
+import { FetchQuestionCommentsUseCase } from '@/domain/forum/application/use-cases/fetch-question-comments';
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
@@ -51,13 +53,13 @@ import { ChooseQuestionBestAnswerUseCase } from '@/domain/forum/application/use-
     AnswerQuestionController,
     EditAnswerController,
     DeleteAnswerController,
-    ListAnswerCommentsController,
     DeleteQuestionCommentController,
     DeleteAnswerCommentController,
     CommentQuestionController,
     CommentAnswerController,
-    ListQuestionAnswersController,
-    ListAnswerCommentsController,
+    FetchQuestionAnswersController,
+    FetchAnswerCommentsController,
+    FetchQuestionCommentsController,
     SelectQuestionBestAnswerController,
   ],
   providers: [
@@ -71,13 +73,13 @@ import { ChooseQuestionBestAnswerUseCase } from '@/domain/forum/application/use-
     AnswerQuestionUseCase,
     EditAnswerUseCase,
     DeleteAnswerUseCase,
-    FetchAnswerCommentsUseCase,
     DeleteQuestionCommentUseCase,
     DeleteAnswerCommentUseCase,
     CommentOnQuestionUseCase,
     CommentOnAnswerUseCase,
     FetchQuestionAnswersUseCase,
     FetchAnswerCommentsUseCase,
+    FetchQuestionCommentsUseCase,
     ChooseQuestionBestAnswerUseCase,
   ],
 })

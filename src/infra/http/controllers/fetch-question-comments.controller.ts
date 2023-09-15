@@ -2,7 +2,7 @@ import { FetchQuestionCommentsUseCase } from '@/domain/forum/application/use-cas
 import { Controller } from '@nestjs/common';
 
 @Controller('/question/:questionId/comments')
-export class ListQuestionCommentsController {
+export class FetchQuestionCommentsController {
   public constructor(
     private readonly fetchQuestionComments: FetchQuestionCommentsUseCase,
   ) {}

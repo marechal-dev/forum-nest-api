@@ -2,37 +2,42 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 
-import { hash } from 'bcrypt';
-
 import request from 'supertest';
 
+import { hash } from 'bcrypt';
+
 import { AppModule } from '@/infra/app.module';
-import { PrismaService } from '@/infra/database/prisma/prisma.service';
-import { StudentFactory } from 'test/factories/make-student';
 import { DatabaseModule } from '@/infra/database/database.module';
+import { StudentFactory } from 'test/factories/make-student';
 import { QuestionFactory } from 'test/factories/make-question';
 import { Slug } from '@/domain/forum/enterprise/entities/value-objects/slug';
 import { AnswerFactory } from 'test/factories/make-answer';
+import { AnswerCommentFactory } from 'test/factories/make-answer-comment';
 
-describe('Delete Answer Controller E2E Test Suite Case', () => {
+describe('Fetch Question Answers Controller E2E Test Suite Case', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let jwt: JwtService;
   let studentFactory: StudentFactory;
   let questionFactory: QuestionFactory;
   let answerFactory: AnswerFactory;
-  let jwt: JwtService;
+  let answerCommentFactory: AnswerCommentFactory;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule, DatabaseModule],
-      providers: [StudentFactory, QuestionFactory, AnswerFactory],
+      providers: [
+        StudentFactory,
+        QuestionFactory,
+        AnswerFactory,
+        AnswerCommentFactory,
+      ],
     }).compile();
 
     app = moduleRef.createNestApplication();
-    prisma = moduleRef.get(PrismaService);
-    questionFactory = moduleRef.get(QuestionFactory);
     studentFactory = moduleRef.get(StudentFactory);
+    questionFactory = moduleRef.get(QuestionFactory);
     answerFactory = moduleRef.get(AnswerFactory);
+    answerCommentFactory = moduleRef.get(AnswerCommentFactory);
     jwt = moduleRef.get(JwtService);
 
     await app.init();
@@ -42,7 +47,7 @@ describe('Delete Answer Controller E2E Test Suite Case', () => {
     await app.close();
   });
 
-  test('[DELETE] /answers/:id', async () => {
+  test('[GET] /answers/:answerId/comments', async () => {
     const email = 'johndoe@example.com';
     const password = '1234567';
     const passwordHash = await hash(password, 8);
@@ -59,30 +64,48 @@ describe('Delete Answer Controller E2E Test Suite Case', () => {
 
     const question = await questionFactory.makePrismaQuestion({
       title: 'Question 01',
-      slug: Slug.create('Question 01'),
+      slug: Slug.create('question-01'),
+      content: 'Question Content',
       authorId: user.id,
     });
 
     const answer = await answerFactory.makePrismaAnswer({
       authorId: user.id,
       questionId: question.id,
+      content: 'Some content 01',
     });
 
     const answerId = answer.id.toString();
 
+    await Promise.all([
+      answerCommentFactory.makePrismaQuestion({
+        authorId: user.id,
+        answerId: answer.id,
+        content: 'Some content 01',
+      }),
+      answerCommentFactory.makePrismaQuestion({
+        authorId: user.id,
+        answerId: answer.id,
+        content: 'Some content 02',
+      }),
+    ]);
+
     const response = await request(app.getHttpServer())
-      .delete(`/answers/${answerId}`)
+      .get(`/answers/${answerId}/comments`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send();
 
-    expect(response.statusCode).toBe(204);
-
-    const answerOnDatabase = await prisma.answer.findUnique({
-      where: {
-        id: answer.id.toString(),
-      },
+    expect(response.statusCode).toBe(200);
+    expect(response.body.answerComments).toHaveLength(2);
+    expect(response.body).toEqual({
+      answerComments: expect.arrayContaining([
+        expect.objectContaining({
+          content: 'Some content 01',
+        }),
+        expect.objectContaining({
+          content: 'Some content 02',
+        }),
+      ]),
     });
-
-    expect(answerOnDatabase).toBeNull();
   });
 });
