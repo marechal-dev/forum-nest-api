@@ -14,7 +14,7 @@ import { Slug } from '@/domain/forum/enterprise/entities/value-objects/slug';
 import { AnswerFactory } from 'test/factories/make-answer';
 import { AnswerCommentFactory } from 'test/factories/make-answer-comment';
 
-describe('Fetch Question Answers Controller E2E Test Suite Case', () => {
+describe('Fetch Answer Comments Controller E2E Test Suite Case', () => {
   let app: INestApplication;
   let jwt: JwtService;
   let studentFactory: StudentFactory;
