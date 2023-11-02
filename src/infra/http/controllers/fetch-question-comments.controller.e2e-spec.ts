@@ -9,35 +9,27 @@ import { hash } from 'bcrypt';
 import { Slug } from '@/domain/forum/enterprise/entities/value-objects/slug';
 import { AppModule } from '@/infra/app.module';
 import { DatabaseModule } from '@/infra/database/database.module';
-import { AnswerFactory } from 'test/factories/make-answer';
-import { AnswerCommentFactory } from 'test/factories/make-answer-comment';
 import { QuestionFactory } from 'test/factories/make-question';
+import { QuestionCommentFactory } from 'test/factories/make-question-comment';
 import { StudentFactory } from 'test/factories/make-student';
 
-describe('Fetch Answer Comments Controller E2E Test Suite Case', () => {
+describe('Fetch Question Comments Controller E2E Test Suite', () => {
   let app: INestApplication;
   let jwt: JwtService;
   let studentFactory: StudentFactory;
   let questionFactory: QuestionFactory;
-  let answerFactory: AnswerFactory;
-  let answerCommentFactory: AnswerCommentFactory;
+  let questionCommentFactory: QuestionCommentFactory;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule, DatabaseModule],
-      providers: [
-        StudentFactory,
-        QuestionFactory,
-        AnswerFactory,
-        AnswerCommentFactory,
-      ],
+      providers: [StudentFactory, QuestionFactory, QuestionCommentFactory],
     }).compile();
 
     app = moduleRef.createNestApplication();
     studentFactory = moduleRef.get(StudentFactory);
     questionFactory = moduleRef.get(QuestionFactory);
-    answerFactory = moduleRef.get(AnswerFactory);
-    answerCommentFactory = moduleRef.get(AnswerCommentFactory);
+    questionCommentFactory = moduleRef.get(QuestionCommentFactory);
     jwt = moduleRef.get(JwtService);
 
     await app.init();
@@ -47,7 +39,7 @@ describe('Fetch Answer Comments Controller E2E Test Suite Case', () => {
     await app.close();
   });
 
-  test('[GET] /answers/:answerId/comments', async () => {
+  test('[GET] /questions/:questionId/comments', async () => {
     const email = 'johndoe@example.com';
     const password = '1234567';
     const passwordHash = await hash(password, 8);
@@ -69,36 +61,30 @@ describe('Fetch Answer Comments Controller E2E Test Suite Case', () => {
       authorId: user.id,
     });
 
-    const answer = await answerFactory.makePrismaAnswer({
-      authorId: user.id,
-      questionId: question.id,
-      content: 'Some content 01',
-    });
-
-    const answerId = answer.id.toString();
+    const questionId = question.id.toString();
 
     await Promise.all([
-      answerCommentFactory.makePrismaAnswerComment({
+      questionCommentFactory.makePrismaQuestionComment({
         authorId: user.id,
-        answerId: answer.id,
+        questionId: question.id,
         content: 'Some content 01',
       }),
-      answerCommentFactory.makePrismaAnswerComment({
+      questionCommentFactory.makePrismaQuestionComment({
         authorId: user.id,
-        answerId: answer.id,
+        questionId: question.id,
         content: 'Some content 02',
       }),
     ]);
 
     const response = await request(app.getHttpServer())
-      .get(`/answers/${answerId}/comments`)
+      .get(`/questions/${questionId}/comments`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send();
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.answerComments).toHaveLength(2);
+    expect(response.body.questionComments).toHaveLength(2);
     expect(response.body).toEqual({
-      answerComments: expect.arrayContaining([
+      questionComments: expect.arrayContaining([
         expect.objectContaining({
           content: 'Some content 01',
         }),

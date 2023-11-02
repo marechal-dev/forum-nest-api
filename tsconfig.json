@@ -19,7 +19,8 @@
       ]
     },
     "types": [
-      "vitest/globals"
+      "vitest/globals",
+      "multer"
     ],
     "strict": true,
     "alwaysStrict": true,

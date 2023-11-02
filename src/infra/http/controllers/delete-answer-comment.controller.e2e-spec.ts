@@ -2,25 +2,28 @@ import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 
-import request from 'supertest';
-
 import { hash } from 'bcrypt';
+
+import request from 'supertest';
 
 import { Slug } from '@/domain/forum/enterprise/entities/value-objects/slug';
 import { AppModule } from '@/infra/app.module';
 import { DatabaseModule } from '@/infra/database/database.module';
+import { PrismaService } from '@/infra/database/prisma/prisma.service';
 import { AnswerFactory } from 'test/factories/make-answer';
 import { AnswerCommentFactory } from 'test/factories/make-answer-comment';
 import { QuestionFactory } from 'test/factories/make-question';
 import { StudentFactory } from 'test/factories/make-student';
+import { afterAll, beforeAll } from 'vitest';
 
-describe('Fetch Answer Comments Controller E2E Test Suite Case', () => {
+describe('Delete Answer Comment Controller E2E Test Suite', () => {
   let app: INestApplication;
-  let jwt: JwtService;
+  let prisma: PrismaService;
   let studentFactory: StudentFactory;
   let questionFactory: QuestionFactory;
   let answerFactory: AnswerFactory;
   let answerCommentFactory: AnswerCommentFactory;
+  let jwt: JwtService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -34,9 +37,10 @@ describe('Fetch Answer Comments Controller E2E Test Suite Case', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    studentFactory = moduleRef.get(StudentFactory);
+    prisma = moduleRef.get(PrismaService);
     questionFactory = moduleRef.get(QuestionFactory);
     answerFactory = moduleRef.get(AnswerFactory);
+    studentFactory = moduleRef.get(StudentFactory);
     answerCommentFactory = moduleRef.get(AnswerCommentFactory);
     jwt = moduleRef.get(JwtService);
 
@@ -47,7 +51,7 @@ describe('Fetch Answer Comments Controller E2E Test Suite Case', () => {
     await app.close();
   });
 
-  test('[GET] /answers/:answerId/comments', async () => {
+  test('[DELETE] /answers/comments/:id', async () => {
     const email = 'johndoe@example.com';
     const password = '1234567';
     const passwordHash = await hash(password, 8);
@@ -64,48 +68,35 @@ describe('Fetch Answer Comments Controller E2E Test Suite Case', () => {
 
     const question = await questionFactory.makePrismaQuestion({
       title: 'Question 01',
-      slug: Slug.create('question-01'),
-      content: 'Question Content',
+      slug: Slug.create('Question 01'),
       authorId: user.id,
     });
 
     const answer = await answerFactory.makePrismaAnswer({
-      authorId: user.id,
       questionId: question.id,
-      content: 'Some content 01',
+      content: 'Answer 01',
+      authorId: user.id,
     });
 
-    const answerId = answer.id.toString();
-
-    await Promise.all([
-      answerCommentFactory.makePrismaAnswerComment({
-        authorId: user.id,
-        answerId: answer.id,
-        content: 'Some content 01',
-      }),
-      answerCommentFactory.makePrismaAnswerComment({
-        authorId: user.id,
-        answerId: answer.id,
-        content: 'Some content 02',
-      }),
-    ]);
+    const answerComment = await answerCommentFactory.makePrismaAnswerComment({
+      authorId: user.id,
+      answerId: answer.id,
+      content: 'Answer Comment 01',
+    });
 
     const response = await request(app.getHttpServer())
-      .get(`/answers/${answerId}/comments`)
+      .delete(`/answers/comments/${answerComment.id.toString()}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send();
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body.answerComments).toHaveLength(2);
-    expect(response.body).toEqual({
-      answerComments: expect.arrayContaining([
-        expect.objectContaining({
-          content: 'Some content 01',
-        }),
-        expect.objectContaining({
-          content: 'Some content 02',
-        }),
-      ]),
+    expect(response.statusCode).toBe(204);
+
+    const answerCommentOndatabase = await prisma.comment.findUnique({
+      where: {
+        id: answerComment.id.toString(),
+      },
     });
+
+    expect(answerCommentOndatabase).toBeNull();
   });
 });
