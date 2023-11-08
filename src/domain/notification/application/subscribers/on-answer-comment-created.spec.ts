@@ -1,21 +1,25 @@
-import { SpyInstance } from 'vitest';
 import { makeAnswer } from 'test/factories/make-answer';
-import { InMemoryAnswersRepository } from 'test/repositories/in-memory-answers-repository';
+import { makeAnswerComment } from 'test/factories/make-answer-comment';
+import { makeQuestion } from 'test/factories/make-question';
 import { InMemoryAnswerAttachmentsRepository } from 'test/repositories/in-memory-answer-attachments-repository';
-import { InMemoryQuestionsRepository } from 'test/repositories/in-memory-questions-repository';
+import { InMemoryAnswerCommentsRepository } from 'test/repositories/in-memory-answer-comments-repository';
+import { InMemoryAnswersRepository } from 'test/repositories/in-memory-answers-repository';
+import { InMemoryAttachmentsRepository } from 'test/repositories/in-memory-attachments-repository';
+import { InMemoryNotificationsRepository } from 'test/repositories/in-memory-notifications-repository';
 import { InMemoryQuestionAttachmentsRepository } from 'test/repositories/in-memory-question-attachments-repository';
+import { InMemoryQuestionsRepository } from 'test/repositories/in-memory-questions-repository';
+import { InMemoryStudentsRepository } from 'test/repositories/in-memory-students-repository';
+import { waitFor } from 'test/utils/wait-for';
+import { SpyInstance } from 'vitest';
 import {
   SendNotificationUseCase,
   SendNotificationUseCaseRequest,
   SendNotificationUseCaseResponse,
 } from '../use-cases/send-notification';
-import { InMemoryNotificationsRepository } from 'test/repositories/in-memory-notifications-repository';
-import { makeQuestion } from 'test/factories/make-question';
-import { waitFor } from 'test/utils/wait-for';
 import { OnAnswerCommentCreated } from './on-answer-comment-created';
-import { makeAnswerComment } from 'test/factories/make-answer-comment';
-import { InMemoryAnswerCommentsRepository } from 'test/repositories/in-memory-answer-comments-repository';
 
+let inMemoryAttachmentsRepository: InMemoryAttachmentsRepository;
+let inMemoryStudentsRepository: InMemoryStudentsRepository;
 let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
 
@@ -34,10 +38,14 @@ let sendNotificationExecuteSpy: SpyInstance<
 
 describe('On Answer Comment Created Domain Event Test Suite Case', () => {
   beforeEach(() => {
+    inMemoryAttachmentsRepository = new InMemoryAttachmentsRepository();
+    inMemoryStudentsRepository = new InMemoryStudentsRepository();
     inMemoryQuestionAttachmentsRepository =
       new InMemoryQuestionAttachmentsRepository();
     inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
       inMemoryQuestionAttachmentsRepository,
+      inMemoryAttachmentsRepository,
+      inMemoryStudentsRepository,
     );
 
     inMemoryAnswerAttachmentsRepository =
@@ -46,7 +54,9 @@ describe('On Answer Comment Created Domain Event Test Suite Case', () => {
       inMemoryAnswerAttachmentsRepository,
     );
 
-    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository();
+    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository(
+      inMemoryStudentsRepository,
+    );
 
     inMemoryNotificationsRepository = new InMemoryNotificationsRepository();
     sendNotificationUseCase = new SendNotificationUseCase(
