@@ -14,7 +14,7 @@ export class Slug {
    *
    * Example: "An example title" => "an-example-title"
    *
-   * @param text {string}
+   * @param {string} text
    */
   static createFromText(text: string): Slug {
     const slugText = text

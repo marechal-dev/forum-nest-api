@@ -4,6 +4,8 @@ import { PrismaService } from '../prisma.service';
 import { PaginationParams } from '@/core/repositories/pagination-params';
 import { QuestionCommentsRepository } from '@/domain/forum/application/repositories/question-comments-repository';
 import { QuestionComment } from '@/domain/forum/enterprise/entities/question-comment';
+import { CommentWithAuthor } from '@/domain/forum/enterprise/entities/value-objects/comment-with-author';
+import { PrismaCommentWithAuthorMapper } from '../mappers/prisma-comment-with-author-mapper';
 import { PrismaQuestionCommentMapper } from '../mappers/prisma-question-comment-mapper';
 
 @Injectable()
@@ -58,5 +60,28 @@ export class PrismaQuestionCommentsRepository extends QuestionCommentsRepository
     });
 
     return questionComments.map(PrismaQuestionCommentMapper.toDomain);
+  }
+
+  public async findManyByQuestionIdWithAuthor(
+    questionId: string,
+    { page }: PaginationParams,
+  ): Promise<CommentWithAuthor[]> {
+    const perPage = 20;
+    const skip = (page - 1) * perPage;
+
+    const questionCommentsWithAuthors = await this.prisma.comment.findMany({
+      where: {
+        questionId,
+      },
+      include: {
+        author: true,
+      },
+      take: perPage,
+      skip,
+    });
+
+    return questionCommentsWithAuthors.map(
+      PrismaCommentWithAuthorMapper.toDomain,
+    );
   }
 }

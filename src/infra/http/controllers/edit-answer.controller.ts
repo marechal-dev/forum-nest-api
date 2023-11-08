@@ -10,13 +10,14 @@ import {
 
 import { z } from 'zod';
 
+import { EditAnswerUseCase } from '@/domain/forum/application/use-cases/edit-answer';
 import { CurrentUser } from '@/infra/auth/current-user.decorator';
 import { UserPayload } from '@/infra/auth/jwt.strategy';
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
-import { EditAnswerUseCase } from '@/domain/forum/application/use-cases/edit-answer';
 
 const editAnswerBodySchema = z.object({
   content: z.string(),
+  attachments: z.array(z.string().uuid()).default([]),
 });
 
 type EditAnswerBodySchema = z.infer<typeof editAnswerBodySchema>;
@@ -33,14 +34,14 @@ export class EditAnswerController {
     @Param('id') answerId: string,
     @CurrentUser() user: UserPayload,
   ) {
-    const { content } = body;
+    const { content, attachments } = body;
     const userId = user.sub;
 
     const result = await this.editAnswerUseCase.execute({
       answerId,
       content,
       authorId: userId,
-      attachmentIds: [],
+      attachmentIds: attachments,
     });
 
     if (result.isLeft()) {

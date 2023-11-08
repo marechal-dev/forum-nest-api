@@ -8,13 +8,14 @@ import {
 
 import { z } from 'zod';
 
+import { AnswerQuestionUseCase } from '@/domain/forum/application/use-cases/answer-question';
 import { CurrentUser } from '@/infra/auth/current-user.decorator';
 import { UserPayload } from '@/infra/auth/jwt.strategy';
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
-import { AnswerQuestionUseCase } from '@/domain/forum/application/use-cases/answer-question';
 
 const answerQuestionBodySchema = z.object({
   content: z.string(),
+  attachments: z.array(z.string().uuid()),
 });
 
 type AnswerQuestionBodySchema = z.infer<typeof answerQuestionBodySchema>;
@@ -32,14 +33,14 @@ export class AnswerQuestionController {
     @Param('questionId') questionId: string,
     @CurrentUser() user: UserPayload,
   ) {
-    const { content } = body;
+    const { content, attachments } = body;
     const { sub: userId } = user;
 
     const result = await this.answerQuestionUseCase.execute({
       content,
       authorId: userId,
       questionId,
-      attachmentsIds: [],
+      attachmentsIds: attachments,
     });
 
     if (result.isLeft()) {

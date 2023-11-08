@@ -1,9 +1,11 @@
-import { AnswerCommentsRepository } from '@/domain/forum/application/repositories/answer-comments-repository';
-import { PrismaService } from '../prisma.service';
-import { Injectable } from '@nestjs/common';
 import { PaginationParams } from '@/core/repositories/pagination-params';
+import { AnswerCommentsRepository } from '@/domain/forum/application/repositories/answer-comments-repository';
 import { AnswerComment } from '@/domain/forum/enterprise/entities/answer-comment';
+import { CommentWithAuthor } from '@/domain/forum/enterprise/entities/value-objects/comment-with-author';
+import { Injectable } from '@nestjs/common';
 import { PrismaAnswerCommentMapper } from '../mappers/prisma-answer-comment-mapper';
+import { PrismaCommentWithAuthorMapper } from '../mappers/prisma-comment-with-author-mapper';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class PrismaAnswerCommentsRepository extends AnswerCommentsRepository {
@@ -56,5 +58,26 @@ export class PrismaAnswerCommentsRepository extends AnswerCommentsRepository {
     });
 
     return answerComments.map(PrismaAnswerCommentMapper.toDomain);
+  }
+
+  public async findManyByAnswerIdWithAuthor(
+    answerId: string,
+    { page }: PaginationParams,
+  ): Promise<CommentWithAuthor[]> {
+    const perPage = 20;
+    const skip = (page - 1) * perPage;
+
+    const answersWithComments = await this.prisma.comment.findMany({
+      where: {
+        answerId,
+      },
+      include: {
+        author: true,
+      },
+      take: perPage,
+      skip,
+    });
+
+    return answersWithComments.map(PrismaCommentWithAuthorMapper.toDomain);
   }
 }

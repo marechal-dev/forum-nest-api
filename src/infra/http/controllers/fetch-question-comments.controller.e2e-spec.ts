@@ -82,14 +82,16 @@ describe('Fetch Question Comments Controller E2E Test Suite', () => {
       .send();
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.questionComments).toHaveLength(2);
+    expect(response.body.comments).toHaveLength(2);
     expect(response.body).toEqual({
-      questionComments: expect.arrayContaining([
+      comments: expect.arrayContaining([
         expect.objectContaining({
           content: 'Some content 01',
+          authorName: 'John Doe',
         }),
         expect.objectContaining({
           content: 'Some content 02',
+          authorName: 'John Doe',
         }),
       ]),
     });

@@ -20,7 +20,7 @@ describe('Create Answer', () => {
   it('should be able to create a answer', async () => {
     const result = await systemUnderTest.execute({
       questionId: '1',
-      instructorId: '1',
+      authorId: '1',
       attachmentsIds: ['1', '2'],
       content: 'Conteúdo da resposta',
     });
@@ -40,6 +40,28 @@ describe('Create Answer', () => {
           attachmentId: new UniqueEntityID('2'),
         }),
       ],
+    );
+  });
+
+  it('should persist attachments when creating a new answer', async () => {
+    const result = await systemUnderTest.execute({
+      questionId: '1',
+      authorId: '1',
+      content: 'Conteúdo da pergunta',
+      attachmentsIds: ['1', '2'],
+    });
+
+    expect(result.isRight()).toBeTruthy();
+    expect(inMemoryAnswerAttachmentsRepository.items).toHaveLength(2);
+    expect(inMemoryAnswerAttachmentsRepository.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          attachmentId: new UniqueEntityID('1'),
+        }),
+        expect.objectContaining({
+          attachmentId: new UniqueEntityID('2'),
+        }),
+      ]),
     );
   });
 });
