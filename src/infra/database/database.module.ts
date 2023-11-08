@@ -9,11 +9,13 @@ import { AnswersRepository } from '@/domain/forum/application/repositories/answe
 import { AttachmentsRepository } from '@/domain/forum/application/repositories/attachments-repository';
 import { QuestionAttachmentsRepository } from '@/domain/forum/application/repositories/question-attachments-repository';
 import { QuestionCommentsRepository } from '@/domain/forum/application/repositories/question-comments-repository';
+import { NotificationsRepository } from '@/domain/notification/application/repositories/notifications-repository';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaAnswerAttachmentsRepository } from './prisma/repositories/prisma-answer-attachments-repository';
 import { PrismaAnswerCommentsRepository } from './prisma/repositories/prisma-answer-comments-repository';
 import { PrismaAnswersRepository } from './prisma/repositories/prisma-answers-repository';
 import { PrismaAttachmentsRepository } from './prisma/repositories/prisma-attachments-repository';
+import { PrismaNotificationsRepository } from './prisma/repositories/prisma-notifications-repository';
 import { PrismaQuestionAttachmentsRepository } from './prisma/repositories/prisma-question-attachments-repository';
 import { PrismaQuestionCommentsRepository } from './prisma/repositories/prisma-question-comments-repository';
 import { PrismaQuestionsRepository } from './prisma/repositories/prisma-questions-repository';
@@ -54,6 +56,10 @@ import { PrismaStudentsRepository } from './prisma/repositories/prisma-students-
       provide: AttachmentsRepository,
       useClass: PrismaAttachmentsRepository,
     },
+    {
+      provide: NotificationsRepository,
+      useClass: PrismaNotificationsRepository,
+    },
   ],
   exports: [
     PrismaService,
@@ -65,6 +71,7 @@ import { PrismaStudentsRepository } from './prisma/repositories/prisma-students-
     AnswerCommentsRepository,
     AnswerAttachmentsRepository,
     AttachmentsRepository,
+    NotificationsRepository,
   ],
 })
 export class DatabaseModule {}
