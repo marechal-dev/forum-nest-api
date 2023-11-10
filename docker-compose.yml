@@ -1,10 +1,20 @@
 version: '3.8'
 
 volumes:
+  cache_data:
+    driver: local
   db_data:
     driver: local
 
 services:
+  cache:
+    image: redis
+    container_name: 'forum-cache'
+    ports:
+      - 6379:6379
+    volumes:
+      - 'cache_data:/data'
+
   database:
     image: bitnami/postgresql:15
     container_name: 'forum-pg'
